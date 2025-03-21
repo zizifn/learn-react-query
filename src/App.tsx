@@ -1,21 +1,28 @@
 import {
   useQuery,
-  useMutation,
-  useQueryClient,
   QueryClient,
   QueryClientProvider,
 } from "@tanstack/react-query";
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 
-async function getData() {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve({
-        title: "The Hobbit",
-        authors: ["J.R.R. Tolkien"],
-        thumbnail: "https://ui.dev/images/courses/query/hobbit.jpg",
-      });
-    }, 1000);
-  });
+const BASE_URL = "https://library-api.uidotdev.workers.dev";
+async function getData(): Promise<{
+  title: string;
+  authors: string[];
+  thumbnail: string;
+}> {
+  const url = `${BASE_URL}/books/pD6arNyKyi8C`;
+
+  try {
+    const res = await fetch(url);
+    if (!res.ok) {
+      throw new Error("unable to get data");
+    }
+
+    return res.json();
+  } catch (error) {
+    throw error;
+  }
 }
 
 function usBook() {
@@ -35,7 +42,7 @@ function Book() {
         </h1>
       </header>
       {isPending && <Loading></Loading>}
-      {error && <Error></Error>}
+      {error && <ErrorComponent></ErrorComponent>}
       {isSuccess && (
         <main>
           <h2 className="book-title">{data.title}</h2>
@@ -50,7 +57,7 @@ function Loading() {
   return <main>Loading...</main>;
 }
 
-function Error() {
+function ErrorComponent() {
   return <main>Woops there was an error...</main>;
 }
 
@@ -60,6 +67,7 @@ export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <Book />;
+      <ReactQueryDevtools initialIsOpen={false} />
     </QueryClientProvider>
   );
 }
