@@ -7,6 +7,7 @@ import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { useState } from "react";
 import ActivityFeedWrapper from "./components/Activity";
 import Review from "./components/Review";
+import BookReview from "./components/BookReview";
 
 const BASE_URL = "https://library-api.uidotdev.workers.dev";
 async function getData(id: string): Promise<{
@@ -117,7 +118,8 @@ export default function App() {
     <QueryClientProvider client={queryClient}>
       {/* <Book /> */}
       {/* <ActivityFeedWrapper></ActivityFeedWrapper> */}
-      <Review></Review>
+      {/* <Review></Review> */}
+      <BookReview></BookReview>
       <ReactQueryDevtools initialIsOpen={false} />
     </QueryClientProvider>
   );
