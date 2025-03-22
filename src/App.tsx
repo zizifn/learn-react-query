@@ -5,6 +5,8 @@ import {
 } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { useState } from "react";
+import ActivityFeedWrapper from "./components/Activity";
+import Review from "./components/Review";
 
 const BASE_URL = "https://library-api.uidotdev.workers.dev";
 async function getData(id: string): Promise<{
@@ -27,21 +29,38 @@ async function getData(id: string): Promise<{
 
 function usBook(id: string) {
   return useQuery({
-    queryKey: ["book", id],
+    queryKey: ["book", { id }],
     queryFn: () => getData(id),
+    // staleTime: 5000,
+    gcTime: 5000,
   });
 }
 
 function Book() {
   const [selectedBookId, setSelectedBookId] = useState("pD6arNyKyi8C");
 
-  const { data, isPending, error, isSuccess, status } = usBook(selectedBookId);
+  const {
+    data,
+    isPending,
+    refetch,
+    isRefetching,
+    isStale,
+    error,
+    isSuccess,
+    status,
+    fetchStatus,
+  } = usBook(selectedBookId);
+
+  console.log("status", status);
+
+  console.log("isStale", isStale);
   return (
     <div>
       <header className="app-header">
         <h1>
           <span>Query Library</span>
         </h1>
+        fetchStatus: {fetchStatus}--status {status}
         <div className="select">
           <select
             value={selectedBookId}
@@ -60,10 +79,27 @@ function Book() {
         <main>
           <h2 className="book-title">{data.title}</h2>
           <p>By: {data.authors?.join(", ")}</p>
+          <div>
+            <button className="primary">Check Out</button>
+          </div>
+          {isRefetching && <p>BackgroundUpdateInProgress </p>}
+          {!isStale && !isRefetching && <p>up to date</p>}
+          {isStale && <StaleMessage refetch={refetch}></StaleMessage>}
           {data.thumbnail && <img src={data.thumbnail} alt={data.title} />}
         </main>
       )}
     </div>
+  );
+}
+
+function StaleMessage({ refetch }) {
+  return (
+    <>
+      <p>
+        Data is stale
+        <button onClick={refetch}>refersh data</button>
+      </p>
+    </>
   );
 }
 function Loading() {
@@ -79,7 +115,9 @@ const queryClient = new QueryClient();
 export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <Book />
+      {/* <Book /> */}
+      {/* <ActivityFeedWrapper></ActivityFeedWrapper> */}
+      <Review></Review>
       <ReactQueryDevtools initialIsOpen={false} />
     </QueryClientProvider>
   );
