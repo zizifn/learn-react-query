@@ -4,42 +4,55 @@ import {
   QueryClientProvider,
 } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+import { useState } from "react";
 
 const BASE_URL = "https://library-api.uidotdev.workers.dev";
-async function getData(): Promise<{
+async function getData(id: string): Promise<{
   title: string;
   authors: string[];
   thumbnail: string;
 }> {
-  const url = `${BASE_URL}/books/pD6arNyKyi8C`;
+  const url = `${BASE_URL}/books/${id}`;
 
   try {
     const res = await fetch(url);
     if (!res.ok) {
       throw new Error("unable to get data");
     }
-
     return res.json();
   } catch (error) {
     throw error;
   }
 }
 
-function usBook() {
+function usBook(id: string) {
   return useQuery({
-    queryKey: ["test"],
-    queryFn: getData,
+    queryKey: ["book", id],
+    queryFn: () => getData(id),
   });
 }
 
 function Book() {
-  const { data, isPending, error, isSuccess, status } = usBook();
+  const [selectedBookId, setSelectedBookId] = useState("pD6arNyKyi8C");
+
+  const { data, isPending, error, isSuccess, status } = usBook(selectedBookId);
   return (
     <div>
       <header className="app-header">
         <h1>
           <span>Query Library</span>
         </h1>
+        <div className="select">
+          <select
+            value={selectedBookId}
+            onChange={(e) => setSelectedBookId(e.target.value)}
+          >
+            <option value="pD6arNyKyi8C">The Hobbit</option>
+            <option value="aWZzLPhY4o0C">The Fellowship Of The Ring</option>
+            <option value="12e8PJ2T7sQC">The Two Towers</option>
+            <option value="WZ0f_yUgc0UC">The Return Of The King</option>
+          </select>
+        </div>
       </header>
       {isPending && <Loading></Loading>}
       {error && <ErrorComponent></ErrorComponent>}
@@ -66,7 +79,7 @@ const queryClient = new QueryClient();
 export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <Book />;
+      <Book />
       <ReactQueryDevtools initialIsOpen={false} />
     </QueryClientProvider>
   );
