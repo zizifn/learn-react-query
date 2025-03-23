@@ -10,6 +10,7 @@ import Review from "./components/Review";
 import BookReview from "./components/BookReview";
 import Pagination from "./components/Pagniation";
 import "./App.css";
+import InfiniteExample from "./components/Infinite";
 const BASE_URL = "https://library-api.uidotdev.workers.dev";
 async function getData(id: string): Promise<{
   title: string;
@@ -121,7 +122,8 @@ export default function App() {
       {/* <ActivityFeedWrapper></ActivityFeedWrapper> */}
       {/* <Review></Review> */}
       {/* <BookReview></BookReview> */}
-      <Pagination></Pagination>
+      {/* <Pagination></Pagination> */}
+      <InfiniteExample></InfiniteExample>
       <ReactQueryDevtools initialIsOpen={false} />
     </QueryClientProvider>
   );

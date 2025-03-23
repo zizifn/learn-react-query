@@ -60,3 +60,9 @@
 .opacity-book {
   opacity: 0.5;
 }
+
+.activities {
+  height: 30rem;
+  border: 1px solid red;
+  overflow: scroll;
+}
