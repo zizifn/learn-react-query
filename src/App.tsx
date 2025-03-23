@@ -8,6 +8,7 @@ import { useState } from "react";
 import ActivityFeedWrapper from "./components/Activity";
 import Review from "./components/Review";
 import BookReview from "./components/BookReview";
+import Pagination from "./components/Pagniation";
 
 const BASE_URL = "https://library-api.uidotdev.workers.dev";
 async function getData(id: string): Promise<{
@@ -119,7 +120,8 @@ export default function App() {
       {/* <Book /> */}
       {/* <ActivityFeedWrapper></ActivityFeedWrapper> */}
       {/* <Review></Review> */}
-      <BookReview></BookReview>
+      {/* <BookReview></BookReview> */}
+      <Pagination></Pagination>
       <ReactQueryDevtools initialIsOpen={false} />
     </QueryClientProvider>
   );
