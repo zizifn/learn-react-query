@@ -33,17 +33,50 @@ function useActivities() {
 }
 
 function ActivityFeed() {
-  const rootRef = React.useRef(null);
+  const rootRef = React.useRef<HTMLOListElement>(null);
+  const scrollPositionRef = React.useRef(0);
+  const isLoadingMoreRef = React.useRef(false);
   const { ref, entry } = useIntersectionObserver();
-  const { data, status, fetchNextPage, hasNextPage, isFetchingNextPage } =
-    useActivities();
+  const { ref: ref2, entry: entry2 } = useIntersectionObserver();
+  const {
+    data,
+    status,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    fetchPreviousPage,
+    hasPreviousPage,
+    isFetchingPreviousPage,
+  } = useActivities();
   console.log("ActivityFeed", data?.pages);
 
   React.useEffect(() => {
     if (entry?.isIntersecting && hasNextPage && !isFetchingNextPage) {
+      scrollPositionRef.current = rootRef.current?.scrollTop || 0;
+      isLoadingMoreRef.current = true;
       fetchNextPage();
     }
   }, [entry?.isIntersecting, hasNextPage, isFetchingNextPage]);
+
+  React.useEffect(() => {
+    if (entry2?.isIntersecting && hasPreviousPage && !isFetchingPreviousPage) {
+      console.log("fetchPreviousPage----");
+      fetchPreviousPage();
+    }
+  }, [entry2?.isIntersecting, hasPreviousPage, isFetchingPreviousPage]);
+
+  // Restore scroll position after data loads
+  React.useEffect(() => {
+    if (
+      isLoadingMoreRef.current &&
+      rootRef.current &&
+      !isFetchingNextPage &&
+      !isFetchingPreviousPage
+    ) {
+      rootRef.current.scrollTop = scrollPositionRef.current;
+      isLoadingMoreRef.current = false;
+    }
+  }, [isFetchingNextPage, isFetchingPreviousPage]);
 
   if (status === "pending") {
     return <div>...</div>;
@@ -61,10 +94,19 @@ function ActivityFeed() {
       {hasResults ? (
         <ol ref={rootRef} className="activities">
           {activities.map((activity, i, pages) => {
+            if (i == 2) {
+              return (
+                <ActivityListItem
+                  ref={ref2}
+                  key={activity.activityId}
+                  activity={activity}
+                />
+              );
+            }
             return (
               <ActivityListItem
                 ref={i === pages.length - 2 ? ref : null}
-                key={i}
+                key={activity.activityId}
                 activity={activity}
               />
             );
@@ -82,9 +124,17 @@ function ActivityFeed() {
 
 function ActivityListItem({ ref, activity }) {
   if (ref) {
-    return <li ref={ref}>{activity.activityType}</li>;
+    return (
+      <li ref={ref}>
+        {activity.activityId}:{activity.activityType}
+      </li>
+    );
   } else {
-    return <li>{activity.activityType}</li>;
+    return (
+      <li>
+        {activity.activityId}:{activity.activityType}
+      </li>
+    );
   }
 }
 
