@@ -9,7 +9,7 @@ import ActivityFeedWrapper from "./components/Activity";
 import Review from "./components/Review";
 import BookReview from "./components/BookReview";
 import Pagination from "./components/Pagniation";
-
+import "./App.css";
 const BASE_URL = "https://library-api.uidotdev.workers.dev";
 async function getData(id: string): Promise<{
   title: string;

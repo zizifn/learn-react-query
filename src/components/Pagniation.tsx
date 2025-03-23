@@ -1,16 +1,38 @@
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import * as React from "react";
 
-function useSearch() {
-  return {
-    data: [],
-    status: "pending",
-  };
+async function getData(searchTerm, page) {
+  const resp = await fetch(
+    `https://library-api.uidotdev.workers.dev/books/search?q=${searchTerm}&page=${page}`
+  );
+
+  return await resp.json();
 }
 
-function BookList({ books }) {
+function useSearch(searchTerm, page) {
+  const queryClient = useQueryClient();
+  React.useEffect(() => {
+    console.log("effect", page);
+    queryClient.prefetchQuery({
+      queryKey: ["search", searchTerm, page + 1],
+      queryFn: () => getData(searchTerm, page + 1),
+      staleTime: 3000,
+    });
+  }, [searchTerm, page, queryClient]);
+
+  return useQuery({
+    queryKey: ["search", searchTerm, page],
+    queryFn: () => getData(searchTerm, page),
+    enabled: !!searchTerm,
+    staleTime: 3000,
+    placeholderData: (previousData) => previousData,
+  });
+}
+
+function BookList({ books, isPlaceholderData }) {
   return (
-    <ul>
-      {books.map((book) => {
+    <ul className={isPlaceholderData ? "opacity-book" : ""}>
+      {books?.map((book) => {
         return (
           <li key={book.id}>
             <span className="book-cover">
@@ -26,8 +48,41 @@ function BookList({ books }) {
   );
 }
 
-function PaginatedBookList() {
-  const { data, status } = useSearch();
+function Pagination({ totalPages, activePage, setActivePage }) {
+  const ref = React.useRef<HTMLUListElement>(null);
+
+  // const queryClient = useQueryClient();
+  // function hoverBtn(index) {
+
+  // }
+
+  function nextItem(index) {
+    ref.current?.children[index].scrollIntoView();
+
+    setActivePage(index);
+  }
+  return (
+    <div className="pagination-contianer">
+      <button>previous</button>
+      <ul ref={ref} className="">
+        {new Array(100).fill(0).map((item, index) => {
+          return (
+            <li key={index}>
+              <button className={index == activePage ? "active" : ""}>
+                {index + 1}
+              </button>
+            </li>
+          );
+        })}
+      </ul>
+      <button onClick={() => nextItem(activePage + 1)}>next</button>
+    </div>
+  );
+}
+
+function PaginatedBookList({ searchTerm }) {
+  const [activePage, setActivePage] = React.useState(1);
+  const { data, status, isPlaceholderData } = useSearch(searchTerm, activePage);
 
   if (status === "pending") {
     return <Loading />;
@@ -46,11 +101,13 @@ function PaginatedBookList() {
           </h2>
           <Pagination
             totalPages={100}
-            activePage={1}
-            setActivePage={() => {}}
+            activePage={activePage}
+            setActivePage={() => {
+              setActivePage(activePage + 1);
+            }}
           />
         </header>
-        <BookList books={data.books} />
+        <BookList isPlaceholderData={isPlaceholderData} books={data.books} />
       </div>
     </section>
   );
@@ -62,7 +119,8 @@ function Loading() {
 function ErrorMessage() {
   return <p>Error....</p>;
 }
-export default function Pagination() {
+export default function PaginationSample() {
+  const [search, setSearch] = React.useState("");
   return (
     <div>
       <header className="app-header">
@@ -71,7 +129,15 @@ export default function Pagination() {
         </h1>
       </header>
       <main>
-        <PaginatedBookList />
+        <input
+          type="text"
+          name=""
+          id=""
+          onChange={(e) => {
+            setSearch(e.target.value);
+          }}
+        />
+        <PaginatedBookList searchTerm={search} />
       </main>
     </div>
   );

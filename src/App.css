@@ -40,3 +40,23 @@
 .read-the-docs {
   color: #888;
 }
+.pagination-contianer {
+  width: 20rem;
+  display: flex;
+
+  ul {
+    max-width: 15rem;
+    display: flex;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+  }
+  .active {
+    background-color: white;
+  }
+}
+
+.opacity-book {
+  opacity: 0.5;
+}
